@@ -43,4 +43,9 @@ public class PostService {
     public void modify(Post post, String title, String content) {
         post.modify(title, content);
     }
+
+    // cascade = REMOVE 설정으로 글의 댓글도 함께 삭제된다.
+    public void delete(Post post) {
+        postRepository.delete(post);
+    }
 }
