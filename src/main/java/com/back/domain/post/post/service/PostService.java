@@ -2,6 +2,7 @@ package com.back.domain.post.post.service;
 
 import com.back.domain.post.post.entity.Post;
 import com.back.domain.post.post.repository.PostRepository;
+import com.back.domain.post.postComment.entity.PostComment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -47,5 +48,15 @@ public class PostService {
     // cascade = REMOVE 설정으로 글의 댓글도 함께 삭제된다.
     public void delete(Post post) {
         postRepository.delete(post);
+    }
+
+    // 댓글은 Post 애그리거트를 통해 추가한다. (cascade PERSIST 로 저장)
+    public PostComment writeComment(Post post, String content) {
+        return post.addComment(content);
+    }
+
+    // 지연된 INSERT 를 즉시 실행해 새 댓글의 id 를 확정할 때 사용한다.
+    public void flush() {
+        postRepository.flush();
     }
 }
