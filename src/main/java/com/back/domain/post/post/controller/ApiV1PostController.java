@@ -1,11 +1,13 @@
 package com.back.domain.post.post.controller;
 
 import com.back.domain.post.post.dto.PostDto;
+import com.back.domain.post.post.entity.Post;
 import com.back.domain.post.post.service.PostService;
 import com.back.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,6 +31,19 @@ public class ApiV1PostController {
                 "200-1",
                 "글 목록을 조회하였습니다.",
                 items
+        );
+    }
+
+    @GetMapping("/{id}")
+    @Transactional(readOnly = true)
+    public RsData<PostDto> getItem(@PathVariable int id) {
+        // 글이 없으면 NoSuchElementException → GlobalExceptionHandler 가 404 로 응답
+        Post post = postService.findById(id).get();
+
+        return new RsData<>(
+                "200-1",
+                "%d번 글을 조회하였습니다.".formatted(id),
+                new PostDto(post)
         );
     }
 }

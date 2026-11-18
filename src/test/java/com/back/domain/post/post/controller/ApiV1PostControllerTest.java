@@ -66,4 +66,49 @@ public class ApiV1PostControllerTest {
         resultActions
                 .andExpect(jsonPath("$.data[0].title").value("제목 3"));
     }
+
+    @Test
+    @DisplayName("글 단건조회 : id 로 글 1건을 반환한다.")
+    void t2() throws Exception {
+        int id = 1;
+
+        ResultActions resultActions = mvc
+                .perform(
+                        get("/api/v1/posts/" + id)
+                )
+                .andDo(print());
+
+        Post post = postService.findById(id).get();
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("getItem"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value("200-1"))
+                .andExpect(jsonPath("$.msg").value("%d번 글을 조회하였습니다.".formatted(id)))
+                .andExpect(jsonPath("$.data.id").value(post.getId()))
+                .andExpect(jsonPath("$.data.createDate").value(Matchers.startsWith(post.getCreateDate().toString().substring(0, 16))))
+                .andExpect(jsonPath("$.data.modifyDate").value(Matchers.startsWith(post.getModifyDate().toString().substring(0, 16))))
+                .andExpect(jsonPath("$.data.title").value("제목 1"))
+                .andExpect(jsonPath("$.data.content").value("내용 1"));
+    }
+
+    @Test
+    @DisplayName("글 단건조회 : 존재하지 않는 글이면 404")
+    void t3() throws Exception {
+        int id = Integer.MAX_VALUE;
+
+        ResultActions resultActions = mvc
+                .perform(
+                        get("/api/v1/posts/" + id)
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("getItem"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultCode").value("404-1"))
+                .andExpect(jsonPath("$.msg").value("해당 데이터가 존재하지 않습니다."));
+    }
 }
