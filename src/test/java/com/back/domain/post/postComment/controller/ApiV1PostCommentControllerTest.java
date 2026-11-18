@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -257,5 +258,89 @@ public class ApiV1PostCommentControllerTest {
                 .andExpect(handler().methodName("write"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.resultCode").value("404-1"));
+    }
+
+    @Test
+    @DisplayName("댓글 수정 : 댓글 내용을 바꾸고 200 을 반환한다.")
+    void t10() throws Exception {
+        int postId = 1;
+        int id = 1;
+
+        ResultActions resultActions = mvc
+                .perform(
+                        put("/api/v1/posts/%d/comments/%d".formatted(postId, id))
+                                .contentType(APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "content": "댓글 수정"
+                                        }
+                                        """)
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostCommentController.class))
+                .andExpect(handler().methodName("modify"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value("200-1"))
+                .andExpect(jsonPath("$.msg").value("%d번 댓글이 수정되었습니다.".formatted(id)))
+                .andExpect(jsonPath("$.data.id").value(id))
+                .andExpect(jsonPath("$.data.postId").value(postId))
+                .andExpect(jsonPath("$.data.content").value("댓글 수정"));
+
+        PostComment comment = postService.findById(postId).get().findCommentById(id).get();
+
+        assertThat(comment.getContent()).isEqualTo("댓글 수정");
+    }
+
+    @Test
+    @DisplayName("댓글 수정 : 존재하지 않는 댓글이면 404")
+    void t11() throws Exception {
+        int postId = 1;
+        int id = Integer.MAX_VALUE;
+
+        ResultActions resultActions = mvc
+                .perform(
+                        put("/api/v1/posts/%d/comments/%d".formatted(postId, id))
+                                .contentType(APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "content": "댓글 수정"
+                                        }
+                                        """)
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostCommentController.class))
+                .andExpect(handler().methodName("modify"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultCode").value("404-1"));
+    }
+
+    @Test
+    @DisplayName("댓글 수정 : 내용이 비어 있으면 400")
+    void t12() throws Exception {
+        int postId = 1;
+        int id = 1;
+
+        ResultActions resultActions = mvc
+                .perform(
+                        put("/api/v1/posts/%d/comments/%d".formatted(postId, id))
+                                .contentType(APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "content": ""
+                                        }
+                                        """)
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostCommentController.class))
+                .andExpect(handler().methodName("modify"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultCode").value("400-1"))
+                .andExpect(jsonPath("$.msg").value(Matchers.containsString("content-NotBlank")));
     }
 }

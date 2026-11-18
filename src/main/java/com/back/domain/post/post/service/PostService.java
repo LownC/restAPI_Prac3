@@ -55,6 +55,11 @@ public class PostService {
         return post.addComment(content);
     }
 
+    // 더티체킹으로 UPDATE 된다.
+    public void modifyComment(PostComment postComment, String content) {
+        postComment.modify(content);
+    }
+
     // 지연된 INSERT 를 즉시 실행해 새 댓글의 id 를 확정할 때 사용한다.
     public void flush() {
         postRepository.flush();
