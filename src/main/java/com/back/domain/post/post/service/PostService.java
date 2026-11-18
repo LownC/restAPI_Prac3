@@ -60,6 +60,10 @@ public class PostService {
         postComment.modify(content);
     }
 
+    public boolean deleteComment(Post post, PostComment postComment) {
+        return post.deleteComment(postComment);
+    }
+
     // 지연된 INSERT 를 즉시 실행해 새 댓글의 id 를 확정할 때 사용한다.
     public void flush() {
         postRepository.flush();

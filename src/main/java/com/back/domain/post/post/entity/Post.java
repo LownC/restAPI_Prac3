@@ -46,6 +46,11 @@ public class Post extends BaseEntity {
         return postComment;
     }
 
+    // 컬렉션에서 빼기만 하면 orphanRemoval = true 로 DELETE 된다.
+    public boolean deleteComment(PostComment postComment) {
+        return comments.remove(postComment);
+    }
+
     // 이 글에 달린 댓글 중에서만 찾는다. (다른 글의 댓글 id 면 empty)
     public Optional<PostComment> findCommentById(int id) {
         return comments.stream()
