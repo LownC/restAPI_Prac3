@@ -38,4 +38,9 @@ public class PostService {
     public Optional<Post> findLatest() {
         return postRepository.findFirstByOrderByIdDesc();
     }
+
+    // 영속 상태의 엔티티 값만 바꾸면 트랜잭션 커밋 시 더티체킹으로 UPDATE 된다.
+    public void modify(Post post, String title, String content) {
+        post.modify(title, content);
+    }
 }
