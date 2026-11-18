@@ -3,6 +3,7 @@ package com.back.domain.post.postComment.controller;
 import com.back.domain.post.post.entity.Post;
 import com.back.domain.post.post.service.PostService;
 import com.back.domain.post.postComment.dto.PostCommentDto;
+import com.back.domain.post.postComment.entity.PostComment;
 import com.back.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,19 @@ public class ApiV1PostCommentController {
                 "200-1",
                 "%d번 글의 댓글 목록을 조회하였습니다.".formatted(postId),
                 items
+        );
+    }
+
+    @GetMapping("/{id}")
+    @Transactional(readOnly = true)
+    public RsData<PostCommentDto> getItem(@PathVariable int postId, @PathVariable int id) {
+        Post post = postService.findById(postId).get();
+        PostComment postComment = post.findCommentById(id).get();
+
+        return new RsData<>(
+                "200-1",
+                "%d번 댓글을 조회하였습니다.".formatted(id),
+                new PostCommentDto(postComment)
         );
     }
 }

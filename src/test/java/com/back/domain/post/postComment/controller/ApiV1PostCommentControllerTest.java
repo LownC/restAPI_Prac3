@@ -106,4 +106,69 @@ public class ApiV1PostCommentControllerTest {
                 .andExpect(jsonPath("$.resultCode").value("404-1"))
                 .andExpect(jsonPath("$.msg").value("해당 데이터가 존재하지 않습니다."));
     }
+
+    @Test
+    @DisplayName("댓글 단건조회 : 글 id 와 댓글 id 로 댓글 1건을 반환한다.")
+    void t4() throws Exception {
+        int postId = 1;
+        int id = 1;
+
+        ResultActions resultActions = mvc
+                .perform(
+                        get("/api/v1/posts/%d/comments/%d".formatted(postId, id))
+                )
+                .andDo(print());
+
+        PostComment comment = postService.findById(postId).get().findCommentById(id).get();
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostCommentController.class))
+                .andExpect(handler().methodName("getItem"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value("200-1"))
+                .andExpect(jsonPath("$.msg").value("%d번 댓글을 조회하였습니다.".formatted(id)))
+                .andExpect(jsonPath("$.data.id").value(id))
+                .andExpect(jsonPath("$.data.createDate").value(Matchers.startsWith(comment.getCreateDate().toString().substring(0, 16))))
+                .andExpect(jsonPath("$.data.modifyDate").value(Matchers.startsWith(comment.getModifyDate().toString().substring(0, 16))))
+                .andExpect(jsonPath("$.data.postId").value(postId))
+                .andExpect(jsonPath("$.data.content").value("댓글 1-1"));
+    }
+
+    @Test
+    @DisplayName("댓글 단건조회 : 존재하지 않는 댓글이면 404")
+    void t5() throws Exception {
+        int postId = 1;
+        int id = Integer.MAX_VALUE;
+
+        ResultActions resultActions = mvc
+                .perform(
+                        get("/api/v1/posts/%d/comments/%d".formatted(postId, id))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostCommentController.class))
+                .andExpect(handler().methodName("getItem"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultCode").value("404-1"));
+    }
+
+    @Test
+    @DisplayName("댓글 단건조회 : 다른 글에 달린 댓글을 요청하면 404")
+    void t6() throws Exception {
+        int postId = 1;
+        int id = 4; // 4번 댓글(댓글 2-1)은 2번 글의 댓글
+
+        ResultActions resultActions = mvc
+                .perform(
+                        get("/api/v1/posts/%d/comments/%d".formatted(postId, id))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostCommentController.class))
+                .andExpect(handler().methodName("getItem"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultCode").value("404-1"));
+    }
 }

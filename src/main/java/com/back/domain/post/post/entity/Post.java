@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static jakarta.persistence.CascadeType.PERSIST;
 import static jakarta.persistence.CascadeType.REMOVE;
@@ -43,5 +44,12 @@ public class Post extends BaseEntity {
         comments.add(postComment);
 
         return postComment;
+    }
+
+    // 이 글에 달린 댓글 중에서만 찾는다. (다른 글의 댓글 id 면 empty)
+    public Optional<PostComment> findCommentById(int id) {
+        return comments.stream()
+                .filter(comment -> comment.getId() == id)
+                .findFirst();
     }
 }
